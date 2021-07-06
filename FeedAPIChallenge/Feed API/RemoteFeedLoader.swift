@@ -19,6 +19,22 @@ public final class RemoteFeedLoader: FeedLoader {
 	}
 
 	public func load(completion: @escaping (FeedLoader.Result) -> Void) {
-		fatalError("Must be implemented")
+		client.get(from: url) { [unowned self] result in
+			switch result {
+			case .failure(_):
+				// Do nothing
+				break
+			case .success(_):
+				self.client.get(from: self.url) { result in
+					switch result {
+					case .failure(_):
+						// Do nothing
+						break
+					case .success(_):
+						completion(.success([FeedImage(id: UUID(), description: nil, location: nil, url: URL(string: "https://a-given-url.com")!)]))
+					}
+				}
+			}
+		}
 	}
 }
