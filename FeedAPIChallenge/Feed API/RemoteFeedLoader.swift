@@ -21,6 +21,7 @@ public final class RemoteFeedLoader: FeedLoader {
 	public func load(completion: @escaping (FeedLoader.Result) -> Void) {
 		client.get(from: self.url) { result in
 			guard case .success = result else {
+				completion(.failure(Error.connectivity))
 				return
 			}
 			completion(.success([FeedImage(id: UUID(), description: nil, location: nil, url: URL(string: "https://a-given-url.com")!)]))
