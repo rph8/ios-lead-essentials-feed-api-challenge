@@ -24,11 +24,16 @@ public final class RemoteFeedLoader: FeedLoader {
 				completion(.failure(Error.connectivity))
 				return
 			}
+
 			guard let (_, httpResponse) = try? result.get(), httpResponse.statusCode == 200 else {
 				completion(.failure(Error.invalidData))
 				return
 			}
-			completion(.success([FeedImage(id: UUID(), description: nil, location: nil, url: URL(string: "https://a-given-url.com")!)]))
+
+			completion(.failure(Error.invalidData))
+			return
+
+//				completion(.success([FeedImage(id: UUID(), description: nil, location: nil, url: URL(string: "https://a-given-url.com")!)]))
 		}
 	}
 }
