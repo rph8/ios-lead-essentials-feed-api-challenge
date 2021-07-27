@@ -25,13 +25,30 @@ public final class RemoteFeedLoader: FeedLoader {
 				return
 			}
 
-			guard let (_, httpResponse) = try? result.get(), httpResponse.statusCode == 200 else {
+			guard let (data, httpResponse) = try? result.get(), httpResponse.statusCode == 200 else {
 				completion(.failure(Error.invalidData))
 				return
 			}
 
-			completion(.failure(Error.invalidData))
-			return
+			guard let jsonDict = try? JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary, let itemsArr = jsonDict["items"] as? NSArray else {
+				completion(.failure(Error.invalidData))
+				return
+			}
+
+			// Validate JSON object structure
+			let isValid = itemsArr
+				.map { item -> Bool in
+					guard let dict = item as? NSDictionary else { return false }
+					return dict["image_id"] != nil && dict["image_url"] != nil
+				}
+				.reduce(true) { previous, next in previous && next }
+
+			guard isValid else {
+				completion(.failure(Error.invalidData))
+				return
+			}
+
+			completion(.success([]))
 
 //				completion(.success([FeedImage(id: UUID(), description: nil, location: nil, url: URL(string: "https://a-given-url.com")!)]))
 		}
