@@ -48,9 +48,24 @@ public final class RemoteFeedLoader: FeedLoader {
 				return
 			}
 
-			completion(.success([]))
+			// Convert the JSON to objects
+			let feedImages = itemsArr.map { item -> FeedImage? in
+				guard let dict = item as? NSDictionary,
+				      let imageIdString = dict["image_id"] as? String,
+				      let imageId = UUID(uuidString: imageIdString),
+				      let urlString = dict["image_url"] as? String,
+				      let url = URL(string: urlString) else { return nil }
+				return FeedImage(id: imageId,
+				                 description: dict["image_desc"] as? String,
+				                 location: dict["image_loc"] as? String,
+				                 url: url)
+			}
+			.reduce([]) { previous, feedImage -> [FeedImage] in
+				guard let feedImage = feedImage else { return previous }
+				return previous + [feedImage]
+			}
 
-//				completion(.success([FeedImage(id: UUID(), description: nil, location: nil, url: URL(string: "https://a-given-url.com")!)]))
+			completion(.success(feedImages))
 		}
 	}
 }
