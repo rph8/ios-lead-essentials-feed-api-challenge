@@ -5,6 +5,17 @@
 import Foundation
 
 public final class RemoteFeedLoader: FeedLoader {
+	struct FeedImageStruct: Codable {
+		var imageId: UUID
+		var imageUrl: URL
+		var imageDesc: String?
+		var imageLoc: String?
+	}
+
+	struct FeedImageResponse: Codable {
+		var items: [FeedImageStruct]
+	}
+
 	private let url: URL
 	private let client: HTTPClient
 
@@ -20,6 +31,8 @@ public final class RemoteFeedLoader: FeedLoader {
 
 	public func load(completion: @escaping (FeedLoader.Result) -> Void) {
 		client.get(from: self.url) { [weak self] result in
+			guard let _ = self else { return }
+
 			guard case .success = result else {
 				completion(.failure(Error.connectivity))
 				return
@@ -30,43 +43,21 @@ public final class RemoteFeedLoader: FeedLoader {
 				return
 			}
 
-			guard let jsonDict = try? JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary, let itemsArr = jsonDict["items"] as? NSArray else {
-				completion(.failure(Error.invalidData))
-				return
-			}
-
-			// Validate JSON object structure
-			let isValid = itemsArr
-				.map { item -> Bool in
-					guard let dict = item as? NSDictionary else { return false }
-					return dict["image_id"] != nil && dict["image_url"] != nil
+			do {
+				let decoder = JSONDecoder()
+				decoder.keyDecodingStrategy = .convertFromSnakeCase
+				decoder.dateDecodingStrategy = .secondsSince1970
+				let response = try decoder.decode(FeedImageResponse.self, from: data)
+				let feedImages = response.items.map {
+					FeedImage(id: $0.imageId,
+					          description: $0.imageDesc,
+					          location: $0.imageLoc,
+					          url: $0.imageUrl)
 				}
-				.reduce(true) { previous, next in previous && next }
-
-			guard isValid else {
+				completion(.success(feedImages))
+			} catch {
 				completion(.failure(Error.invalidData))
-				return
 			}
-
-			// Convert the JSON to objects
-			let feedImages = itemsArr.map { item -> FeedImage? in
-				guard let dict = item as? NSDictionary,
-				      let imageIdString = dict["image_id"] as? String,
-				      let imageId = UUID(uuidString: imageIdString),
-				      let urlString = dict["image_url"] as? String,
-				      let url = URL(string: urlString) else { return nil }
-				return FeedImage(id: imageId,
-				                 description: dict["image_desc"] as? String,
-				                 location: dict["image_loc"] as? String,
-				                 url: url)
-			}
-			.reduce([]) { previous, feedImage -> [FeedImage] in
-				guard let feedImage = feedImage else { return previous }
-				return previous + [feedImage]
-			}
-
-			guard let _ = self else { return }
-			completion(.success(feedImages))
 		}
 	}
 }
