@@ -33,14 +33,12 @@ public final class RemoteFeedLoader: FeedLoader {
 		client.get(from: self.url) { [weak self] result in
 			guard let _ = self else { return }
 
-			guard case .success = result else {
-				completion(.failure(Error.connectivity))
-				return
+			guard let (data, httpResponse) = try? result.get() else {
+				return completion(.failure(Error.connectivity))
 			}
 
-			guard let (data, httpResponse) = try? result.get(), httpResponse.statusCode == 200 else {
-				completion(.failure(Error.invalidData))
-				return
+			guard httpResponse.statusCode == 200 else {
+				return completion(.failure(Error.invalidData))
 			}
 
 			let decoder = JSONDecoder()
