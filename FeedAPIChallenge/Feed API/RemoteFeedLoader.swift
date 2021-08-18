@@ -46,7 +46,6 @@ public final class RemoteFeedLoader: FeedLoader {
 			do {
 				let decoder = JSONDecoder()
 				decoder.keyDecodingStrategy = .convertFromSnakeCase
-				decoder.dateDecodingStrategy = .secondsSince1970
 				let response = try decoder.decode(FeedImageResponse.self, from: data)
 				let feedImages = response.items.map {
 					FeedImage(id: $0.imageId,
