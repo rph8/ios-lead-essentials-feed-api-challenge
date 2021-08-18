@@ -46,12 +46,12 @@ public final class RemoteFeedLoader: FeedLoader {
 			guard let response = try? decoder.decode(FeedImageResponse.self, from: data) else {
 				return completion(.failure(Error.invalidData))
 			}
-			
+
 			let feedImages = response.items.map {
-				FeedImage(id: $0.image_id,
-						  description: $0.image_desc,
-						  location: $0.image_loc,
-						  url: $0.image_url)
+				FeedImage(id: $0.imageId,
+				          description: $0.imageDesc,
+				          location: $0.imageLoc,
+				          url: $0.imageUrl)
 			}
 			completion(.success(feedImages))
 		}
