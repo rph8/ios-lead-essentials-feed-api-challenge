@@ -44,13 +44,10 @@ public final class RemoteFeedLoader: FeedLoader {
 				return completion(.failure(Error.connectivity))
 			}
 
-			guard httpResponse.statusCode == 200 else {
-				return completion(.failure(Error.invalidData))
-			}
-
 			let decoder = JSONDecoder()
 			decoder.keyDecodingStrategy = .convertFromSnakeCase
-			guard let response = try? decoder.decode(FeedImageResponse.self, from: data) else {
+			guard httpResponse.statusCode == 200,
+			      let response = try? decoder.decode(FeedImageResponse.self, from: data) else {
 				return completion(.failure(Error.invalidData))
 			}
 
