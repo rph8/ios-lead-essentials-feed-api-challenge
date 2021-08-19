@@ -10,6 +10,13 @@ public final class RemoteFeedLoader: FeedLoader {
 		var imageUrl: URL
 		var imageDesc: String?
 		var imageLoc: String?
+
+		enum CodingKeys: String, CodingKey {
+			case imageId = "image_id"
+			case imageUrl = "image_url"
+			case imageDesc = "image_desc"
+			case imageLoc = "image_loc"
+		}
 	}
 
 	struct FeedImageResponse: Codable {
