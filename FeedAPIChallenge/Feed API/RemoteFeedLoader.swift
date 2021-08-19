@@ -38,7 +38,7 @@ public final class RemoteFeedLoader: FeedLoader {
 
 	public func load(completion: @escaping (FeedLoader.Result) -> Void) {
 		client.get(from: self.url) { [weak self] result in
-			guard let _ = self else { return }
+			guard self != nil else { return }
 
 			guard let (data, httpResponse) = try? result.get() else {
 				return completion(.failure(Error.connectivity))
