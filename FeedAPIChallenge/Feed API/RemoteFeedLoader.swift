@@ -5,7 +5,7 @@
 import Foundation
 
 public final class RemoteFeedLoader: FeedLoader {
-	struct FeedImageStruct: Codable {
+	private struct FeedImageStruct: Decodable {
 		var imageId: UUID
 		var imageUrl: URL
 		var imageDesc: String?
@@ -16,7 +16,7 @@ public final class RemoteFeedLoader: FeedLoader {
 		}
 	}
 
-	struct FeedImageResponse: Codable {
+	private struct FeedImageResponse: Decodable {
 		var items: [FeedImageStruct]
 	}
 
