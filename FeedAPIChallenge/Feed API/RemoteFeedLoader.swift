@@ -10,6 +10,10 @@ public final class RemoteFeedLoader: FeedLoader {
 		var imageUrl: URL
 		var imageDesc: String?
 		var imageLoc: String?
+
+		var feedImage: FeedImage {
+			.init(id: imageId, description: imageDesc, location: imageLoc, url: imageUrl)
+		}
 	}
 
 	struct FeedImageResponse: Codable {
@@ -47,12 +51,7 @@ public final class RemoteFeedLoader: FeedLoader {
 				return completion(.failure(Error.invalidData))
 			}
 
-			let feedImages = response.items.map {
-				FeedImage(id: $0.imageId,
-				          description: $0.imageDesc,
-				          location: $0.imageLoc,
-				          url: $0.imageUrl)
-			}
+			let feedImages = response.items.map(\.feedImage)
 			completion(.success(feedImages))
 		}
 	}
