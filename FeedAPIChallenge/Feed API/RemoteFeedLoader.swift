@@ -45,14 +45,17 @@ public final class RemoteFeedLoader: FeedLoader {
 				return completion(.failure(Error.invalidData))
 			}
 
-			let decoder = JSONDecoder()
-			decoder.keyDecodingStrategy = .convertFromSnakeCase
-			guard let response = try? decoder.decode(FeedImageResponse.self, from: data) else {
-				return completion(.failure(Error.invalidData))
-			}
-
-			let feedImages = response.items.map(\.feedImage)
-			completion(.success(feedImages))
+			completion(RemoteFeedLoader.map(data, from: httpResponse))
 		}
+	}
+
+	private static func map(_ data: Data, from httpResponse: HTTPURLResponse) -> FeedLoader.Result {
+		let decoder = JSONDecoder()
+		decoder.keyDecodingStrategy = .convertFromSnakeCase
+		guard let response = try? decoder.decode(FeedImageResponse.self, from: data) else {
+			return .failure(Error.invalidData)
+		}
+
+		return .success(response.items.map(\.feedImage))
 	}
 }
