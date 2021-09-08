@@ -18,6 +18,12 @@ public final class RemoteFeedLoader: FeedLoader {
 
 	private struct FeedImageResponse: Decodable {
 		var items: [FeedImageStruct]
+
+		static func decode(from data: Data) -> FeedImageResponse? {
+			let decoder = JSONDecoder()
+			decoder.keyDecodingStrategy = .convertFromSnakeCase
+			return try? decoder.decode(FeedImageResponse.self, from: data)
+		}
 	}
 
 	private let url: URL
@@ -41,18 +47,16 @@ public final class RemoteFeedLoader: FeedLoader {
 				return completion(.failure(Error.connectivity))
 			}
 
-			guard httpResponse.statusCode == 200 else {
-				return completion(.failure(Error.invalidData))
-			}
-
 			completion(RemoteFeedLoader.map(data, from: httpResponse))
 		}
 	}
 
 	private static func map(_ data: Data, from httpResponse: HTTPURLResponse) -> FeedLoader.Result {
-		let decoder = JSONDecoder()
-		decoder.keyDecodingStrategy = .convertFromSnakeCase
-		guard let response = try? decoder.decode(FeedImageResponse.self, from: data) else {
+		guard httpResponse.statusCode == 200 else {
+			return .failure(Error.invalidData)
+		}
+
+		guard let response = FeedImageResponse.decode(from: data) else {
 			return .failure(Error.invalidData)
 		}
 
